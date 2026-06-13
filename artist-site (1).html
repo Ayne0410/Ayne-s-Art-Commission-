@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yuki Art — 委託追蹤</title>
+<style>
+  :root {
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --border: #E8E6E0;
+    --border-strong: #C8C5BD;
+    --text: #1A1917;
+    --text-muted: #6B6860;
+    --text-faint: #A09D96;
+    --accent: #6B5CE7;
+    --accent-light: #EEF0FF;
+    --accent-muted: #9B8FF0;
+    --green: #1D9E75;
+    --green-light: #E4F5EE;
+    --red: #D64040;
+    --red-light: #FDECEC;
+    --amber: #B87B15;
+    --amber-light: #FDF3E0;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; }
+
+  /* NAV */
+  nav { position: sticky; top: 0; z-index: 100; background: rgba(250,250,248,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+  .nav-inner { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  .nav-logo { font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+  .nav-logo svg { width: 22px; height: 22px; }
+  .nav-links { display: flex; gap: 2px; }
+  .nav-link { padding: 6px 12px; border-radius: var(--radius-sm); font-size: 14px; color: var(--text-muted); cursor: pointer; border: none; background: none; transition: all 0.15s; }
+  .nav-link:hover { color: var(--text); background: var(--border); }
+  .nav-link.active { color: var(--accent); background: var(--accent-light); font-weight: 500; }
+
+  /* PAGES */
+  .page { display: none; max-width: 960px; margin: 0 auto; padding: 2.5rem 1.5rem; min-height: calc(100vh - 56px); }
+  .page.active { display: block; }
+
+  /* TYPOGRAPHY */
+  h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+  h2 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 1rem; }
+  h3 { font-size: 16px; font-weight: 600; }
+
+  /* CARD */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); }
+
+  /* BADGE */
+  .badge { display: inline-flex; align-items: center; font-size: 12px; font-weight: 500; padding: 3px 9px; border-radius: 20px; gap: 4px; }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-purple { background: var(--accent-light); color: var(--accent); }
+  .badge-gray { background: var(--border); color: var(--text-muted); }
+
+  /* BUTTONS */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: #5a4dd4; }
+  .btn-outline { background: transparent; color: var(--text); border-color: var(--border-strong); }
+  .btn-outline:hover { background: var(--bg); }
+  .btn-ghost { background: transparent; color: var(--text-muted); border-color: transparent; }
+  .btn-ghost:hover { background: var(--border); color: var(--text); }
+  .btn-danger { background: transparent; color: var(--red); border-color: var(--red-light); }
+  .btn-danger:hover { background: var(--red-light); }
+  .btn-sm { padding: 5px 10px; font-size: 13px; }
+
+  /* FORM */
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 5px; }
+  input[type=text], input[type=password], input[type=email], input[type=number], input[type=date], select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+    font-size: 14px; font-family: inherit; color: var(--text); background: var(--surface);
+    transition: border-color 0.15s; outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+  textarea { resize: vertical; min-height: 90px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* HERO */
+  .hero { text-align: center; padding: 3rem 0 2rem; }
+  .hero-eyebrow { font-size: 13px; font-weight: 500; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .hero h1 { font-size: 36px; margin-bottom: 12px; }
+  .hero p { font-size: 16px; color: var(--text-muted); max-width: 440px; margin: 0 auto 2rem; }
+
+  /* SEARCH */
+  .search-wrap { max-width: 480px; margin: 0 auto; }
+  .search-box { display: flex; gap: 8px; }
+  .search-box input { flex: 1; font-size: 15px; }
+  #searchResult { margin-top: 1.5rem; }
+
+  /* PROGRESS BAR */
+  .progress-track { display: flex; align-items: flex-start; justify-content: space-between; position: relative; margin: 1.25rem 0; }
+  .progress-track::before { content:''; position: absolute; top: 9px; left: 0; right: 0; height: 2px; background: var(--border); z-index: 0; }
+  .prog-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; z-index: 1; }
+  .prog-dot { width: 20px; height: 20px; border-radius: 50%; background: var(--bg); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; transition: all 0.2s; }
+  .prog-dot.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .prog-dot.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 4px var(--accent-light); }
+  .prog-label { font-size: 12px; color: var(--text-faint); text-align: center; }
+  .prog-label.active { color: var(--accent); font-weight: 500; }
+  .prog-label.done { color: var(--green); }
+
+  /* QUEUE TABLE */
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 14px; }
+  th { padding: 10px 14px; text-align: left; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: var(--bg); letter-spacing: 0.04em; text-transform: uppercase; }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .rank-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+  .rank-num.top { background: var(--accent-light); color: var(--accent); border-color: var(--accent-muted); }
+
+  /* GALLERY */
+  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .gallery-item { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; background: var(--bg); border: 1px solid var(--border); cursor: pointer; group; }
+  .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+  .gallery-item:hover img { transform: scale(1.04); }
+  .gallery-del { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: none; align-items: center; justify-content: center; line-height: 1; }
+  .gallery-item:hover .gallery-del { display: flex; }
+  .gallery-caption { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.55)); padding: 20px 10px 8px; font-size: 12px; color: #fff; }
+  .gallery-upload { aspect-ratio: 1; border-radius: var(--radius); border: 2px dashed var(--border-strong); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; color: var(--text-faint); font-size: 13px; transition: all 0.15s; background: var(--bg); }
+  .gallery-upload:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .gallery-upload svg { width: 28px; height: 28px; }
+  #fileInput { display: none; }
+
+  /* PRICING */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .price-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; position: relative; transition: box-shadow 0.15s; }
+  .price-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .price-card.featured { border: 2px solid var(--accent); }
+  .price-featured-badge { position: absolute; top: -1px; right: 16px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 0 0 8px 8px; letter-spacing: 0.04em; }
+  .price-type { font-size: 12px; font-weight: 600; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+  .price-amount { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+  .price-unit { font-size: 13px; color: var(--text-muted); margin-bottom: 1rem; }
+  .price-features { list-style: none; display: flex; flex-direction: column; gap: 7px; font-size: 14px; color: var(--text-muted); }
+  .price-features li { display: flex; align-items: flex-start; gap: 8px; }
+  .price-features li::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); margin-top: 6px; flex-shrink: 0; }
+  .price-edit-btn { position: absolute; bottom: 12px; right: 12px; background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 16px; padding: 4px; border-radius: var(--radius-sm); }
+  .price-edit-btn:hover { background: var(--bg); color: var(--text); }
+
+  /* CONTACT FORM */
+  .contact-wrap { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: start; }
+  .contact-info h2 { margin-bottom: 0.5rem; }
+  .contact-info p { color: var(--text-muted); margin-bottom: 1.5rem; font-size: 15px; }
+  .contact-detail { display: flex; flex-direction: column; gap: 10px; }
+  .contact-row { display: flex; gap: 10px; align-items: center; font-size: 14px; color: var(--text-muted); }
+  .contact-row svg { width: 16px; height: 16px; color: var(--accent); flex-shrink: 0; }
+  .form-success { text-align: center; padding: 2rem; display: none; }
+  .form-success .success-icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* ADMIN */
+  .admin-login { max-width: 360px; margin: 4rem auto; }
+  .admin-main { display: none; }
+  .admin-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+  .admin-tab { padding: 8px 16px; font-size: 14px; font-weight: 500; color: var(--text-muted); cursor: pointer; border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+  .admin-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .admin-panel { display: none; }
+  .admin-panel.active { display: block; }
+  .admin-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
+
+  /* COMMISSION DETAIL MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; display: none; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: var(--radius); padding: 2rem; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+  .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: var(--radius-sm); }
+  .modal-close:hover { background: var(--bg); color: var(--text); }
+
+  /* STATUS PILL SELECT */
+  .status-select { font-size: 12px; padding: 3px 8px; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; font-weight: 500; }
+
+  /* COMMISSION NOTE */
+  .note-block { background: var(--amber-light); border: 1px solid #F0C070; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: var(--amber); margin-top: 8px; }
+
+  /* SECTION HEADER */
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+  .empty svg { width: 48px; height: 48px; margin: 0 auto 1rem; display: block; color: var(--border-strong); }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--text); color: #fff; padding: 10px 20px; border-radius: var(--radius); font-size: 14px; z-index: 300; transition: transform 0.25s; pointer-events: none; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* LIGHTBOX */
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 250; display: none; align-items: center; justify-content: center; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: var(--radius); object-fit: contain; }
+  .lightbox-close { position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.15); border: none; color: #fff; font-size: 22px; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+  /* NOTICE */
+  .notice { background: var(--accent-light); border: 1px solid #C5BCFF; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: var(--accent); margin-bottom: 1.5rem; }
+
+  /* SECTION TITLE EYEBROW */
+  .eyebrow { font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+
+  @media (max-width: 640px) {
+    .form-row, .form-row-3 { grid-template-columns: 1fr; }
+    .contact-wrap { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 26px; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    nav .nav-links { gap: 0; }
+    .nav-link { padding: 6px 8px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+      <span id="siteNameDisplay">Yuki Art</span>
+    </div>
+    <div class="nav-links">
+      <button class="nav-link active" onclick="goPage('home',this)">查詢</button>
+      <button class="nav-link" onclick="goPage('queue',this)">隊列</button>
+      <button class="nav-link" onclick="goPage('gallery',this)">作品集</button>
+      <button class="nav-link" onclick="goPage('pricing',this)">接案</button>
+      <button class="nav-link" onclick="goPage('contact',this)">聯絡</button>
+      <button class="nav-link" onclick="goPage('admin',this)">管理</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HOME / SEARCH -->
+<div id="home" class="page active">
+  <div class="hero">
+    <div class="hero-eyebrow">委託查詢</div>
+    <h1>確認你的委託進度</h1>
+    <p>輸入委託人姓名或訂單編號，即時查看進度與付款狀態。</p>
+  </div>
+  <div class="search-wrap">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="姓名或訂單編號…" onkeydown="if(event.key==='Enter')doSearch()">
+      <button class="btn btn-primary" onclick="doSearch()">查詢</button>
+    </div>
+    <div id="searchResult"></div>
+  </div>
+</div>
+
+<!-- QUEUE -->
+<div id="queue" class="page">
+  <div class="section-header">
+    <div>
+      <div class="eyebrow">委託進度</div>
+      <h2 style="margin-bottom:0">等待隊列</h2>
+    </div>
+  </div>
+  <div id="queueNotice" class="notice" style="display:none"></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:44px">#</th>
+          <th>委託人</th>
+          <th>類型</th>
+          <th>進度</th>
+          <th>付款</th>
+          <th>預計開始</th>
+        </tr>
+      </thead>
+      <tbody id="queueTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div id="gallery" class="page">
+  <div class="section-header">
+    <div>
+      <div class="eyebrow">Portfolio</div>
+      <h2 style="margin-bottom:0">作品集</h2>
+    </div>
+    <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      上傳作品
+    </button>
+  </div>
+  <input type="file" id="fileInput" accept="image/*" multiple onchange="handleUpload(event)">
+  <div class="gallery-grid" id="galleryGrid">
+    <div class="gallery-upload" onclick="document.getElementById('fileInput').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      點擊上傳圖片
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div id="pricing" class="page">
+  <div class="section-header">
+    <div>
+      <div class="eyebrow">Commission Info</div>
+      <h2 style="margin-bottom:0">接案資訊</h2>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="openAddPricing()">+ 新增方案</button>
+  </div>
+  <div class="pricing-grid" id="pricingGrid"></div>
+  <div class="card" style="margin-top:1.5rem" id="commissionRulesCard">
+    <h3 style="margin-bottom:0.75rem">接案規則</h3>
+    <div id="rulesDisplay" style="font-size:14px;color:var(--text-muted);line-height:1.8;white-space:pre-wrap"></div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="editRules()">編輯規則</button>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div id="contact" class="page">
+  <div class="contact-wrap">
+    <div class="contact-info">
+      <div class="eyebrow">Contact</div>
+      <h2>與我聯絡</h2>
+      <p>有任何問題或委託需求，歡迎填寫表單，我會盡快回覆！</p>
+      <div class="contact-detail" id="contactDetail"></div>
+    </div>
+    <div class="card">
+      <div id="contactForm">
+        <div class="form-group">
+          <label>姓名 *</label>
+          <input type="text" id="cName" placeholder="你的名字">
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="cEmail" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label>委託類型</label>
+          <select id="cType">
+            <option value="">— 請選擇 —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>委託說明</label>
+          <textarea id="cMessage" placeholder="描述你的委託需求、角色設計、參考圖等…" rows="5"></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%" onclick="submitContact()">送出詢問</button>
+      </div>
+      <div class="form-success" id="contactSuccess">
+        <div class="success-icon">✉️</div>
+        <h3 style="margin-bottom:6px">已收到你的訊息！</h3>
+        <p style="color:var(--text-muted);font-size:14px">我會盡快與你聯繫，請留意 Email。</p>
+        <button class="btn btn-outline" style="margin-top:1rem" onclick="resetContact()">再送一封</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" class="page">
+  <!-- LOGIN -->
+  <div class="admin-login" id="adminLogin">
+    <div class="card">
+      <h2 style="margin-bottom:0.5rem;text-align:center">後台管理</h2>
+      <p style="text-align:center;color:var(--text-muted);font-size:14px;margin-bottom:1.5rem">請輸入密碼登入</p>
+      <div class="form-group">
+        <label>密碼</label>
+        <input type="password" id="adminPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()">
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="adminLogin()">登入</button>
+      <p style="font-size:12px;color:var(--text-faint);text-align:center;margin-top:10px">預設密碼：<code>yuki2024</code>（可在設定中修改）</p>
+    </div>
+  </div>
+
+  <!-- MAIN ADMIN -->
+  <div class="admin-main" id="adminMain">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h2 style="margin-bottom:0">後台管理</h2>
+      <button class="btn btn-ghost btn-sm" onclick="adminLogout()">登出</button>
+    </div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="adminSwitchTab('tCommissions',this)">委託管理</button>
+      <button class="admin-tab" onclick="adminSwitchTab('tGallery',this)">作品集管理</button>
+      <button class="admin-tab" onclick="adminSwitchTab('tPricing',this)">價格管理</button>
+      <button class="admin-tab" onclick="adminSwitchTab('tSite',this)">網站設定</button>
+    </div>
+
+    <!-- COMMISSIONS PANEL -->
+    <div id="tCommissions" class="admin-panel active">
+      <div class="admin-toolbar">
+        <span id="commissionCount" style="font-size:14px;color:var(--text-muted)"></span>
+        <button class="btn btn-primary btn-sm" onclick="openAddCommission()">+ 新增委託</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>訂單編號</th>
+              <th>委託人</th>
+              <th>類型</th>
+              <th>進度</th>
+              <th>付款</th>
+              <th>預計開始</th>
+              <th>截止</th>
+              <th>備註</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="adminCommTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GALLERY PANEL -->
+    <div id="tGallery" class="admin-panel">
+      <div class="admin-toolbar">
+        <span style="font-size:14px;color:var(--text-muted)">點擊圖片可刪除</span>
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('fileInput').click()">+ 上傳作品</button>
+      </div>
+      <div class="gallery-grid" id="adminGalleryGrid"></div>
+    </div>
+
+    <!-- PRICING PANEL -->
+    <div id="tPricing" class="admin-panel">
+      <div class="admin-toolbar">
+        <span style="font-size:14px;color:var(--text-muted)">管理接案方案與規則</span>
+        <button class="btn btn-primary btn-sm" onclick="openAddPricing()">+ 新增方案</button>
+      </div>
+      <div class="pricing-grid" id="adminPricingGrid"></div>
+      <div class="card" style="margin-top:1.5rem">
+        <h3 style="margin-bottom:0.75rem">接案規則</h3>
+        <textarea id="rulesTA" rows="6" style="margin-bottom:10px"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="saveRules()">儲存規則</button>
+      </div>
+      <div class="card" style="margin-top:1rem">
+        <h3 style="margin-bottom:0.75rem">聯絡資訊</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Email</label><input type="text" id="contactEmail" placeholder="your@email.com"></div>
+          <div class="form-group"><label>Twitter / X</label><input type="text" id="contactTwitter" placeholder="@username"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Instagram</label><input type="text" id="contactIG" placeholder="@username"></div>
+          <div class="form-group"><label>其他（如 Pixiv、Discord）</label><input type="text" id="contactOther" placeholder="連結或 ID"></div>
+        </div>
+        <div class="form-group"><label>公告（顯示在隊列頁面）</label><input type="text" id="queueNoticeText" placeholder="例如：目前接案中，等待時間約 2–3 週"></div>
+        <button class="btn btn-primary btn-sm" onclick="saveContactInfo()">儲存</button>
+      </div>
+    </div>
+
+    <!-- SITE SETTINGS -->
+    <div id="tSite" class="admin-panel">
+      <div class="card" style="max-width:480px">
+        <h3 style="margin-bottom:1rem">網站設定</h3>
+        <div class="form-group"><label>繪師名稱（顯示在 Logo）</label><input type="text" id="siteName" placeholder="Yuki Art"></div>
+        <div class="form-group"><label>修改密碼</label><input type="password" id="newPwd" placeholder="輸入新密碼（空白不更改）"></div>
+        <button class="btn btn-primary" onclick="saveSiteSettings()">儲存設定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COMMISSION MODAL -->
+<div class="modal-overlay" id="commModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('commModal')">✕</button>
+    <h2 id="commModalTitle" style="margin-bottom:1.5rem">新增委託</h2>
+    <input type="hidden" id="commEditId">
+    <div class="form-row">
+      <div class="form-group"><label>訂單編號 *</label><input type="text" id="fId" placeholder="#001"></div>
+      <div class="form-group"><label>委託人姓名 *</label><input type="text" id="fName" placeholder="名字或暱稱"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Email</label><input type="text" id="fEmail" placeholder="可選"></div>
+      <div class="form-group"><label>委託類型</label><select id="fType"></select></div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group"><label>進度狀態</label>
+        <select id="fStatus">
+          <option>等待中</option><option>草稿</option><option>線稿</option><option>上色</option><option>完稿</option>
+        </select>
+      </div>
+      <div class="form-group"><label>付款狀態</label>
+        <select id="fPaid">
+          <option>未付款</option><option>部分付款</option><option>已付清</option>
+        </select>
+      </div>
+      <div class="form-group"><label>金額（NT$）</label><input type="number" id="fAmount" placeholder="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>預計開始日期</label><input type="date" id="fStart"></div>
+      <div class="form-group"><label>預計截止日期</label><input type="date" id="fEnd"></div>
+    </div>
+    <div class="form-group"><label>委託說明 / 備註</label><textarea id="fNote" placeholder="角色描述、參考圖連結、特殊需求…" rows="4"></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:0.5rem">
+      <button class="btn btn-outline" onclick="closeModal('commModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveCommission()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING MODAL -->
+<div class="modal-overlay" id="pricingModal">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" onclick="closeModal('pricingModal')">✕</button>
+    <h2 id="pricingModalTitle" style="margin-bottom:1.5rem">新增方案</h2>
+    <input type="hidden" id="pEditId">
+    <div class="form-group"><label>方案名稱</label><input type="text" id="pName" placeholder="例：全身插圖"></div>
+    <div class="form-row">
+      <div class="form-group"><label>價格（NT$）</label><input type="number" id="pPrice" placeholder="2000"></div>
+      <div class="form-group"><label>單位說明</label><input type="text" id="pUnit" placeholder="例：起、/ 張"></div>
+    </div>
+    <div class="form-group"><label>特色項目（每行一項）</label><textarea id="pFeatures" rows="4" placeholder="全身構圖&#10;細緻背景&#10;3次修改"></textarea></div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px">
+      <input type="checkbox" id="pFeatured" style="width:auto">
+      <label for="pFeatured" style="margin:0;font-weight:400;font-size:14px;color:var(--text)">設為推薦方案</label>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:1rem">
+      <button class="btn btn-danger btn-sm" id="pDeleteBtn" onclick="deletePricing()" style="margin-right:auto;display:none">刪除</button>
+      <button class="btn btn-outline" onclick="closeModal('pricingModal')">取消</button>
+      <button class="btn btn-primary" onclick="savePricing()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== DATA STORE (localStorage) ==========
+function load(k, def) {
+  try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : def; } catch(e) { return def; }
+}
+function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+let commissions = load('yk_commissions', [
+  {id:'#001',name:'小花',email:'',type:'全身插圖',status:'上色',paid:'已付清',amount:2000,start:'2025-06-10',end:'2025-06-28',note:'貓娘角色，需要粉色系配色'},
+  {id:'#002',name:'Rin',email:'',type:'頭像',status:'草稿',paid:'部分付款',amount:800,start:'2025-06-18',end:'2025-07-01',note:''},
+  {id:'#003',name:'阿哲',email:'',type:'多人場景',status:'等待中',paid:'未付款',amount:3500,start:'2025-07-01',end:'',note:'兩個角色，奇幻風格'},
+  {id:'#004',name:'Luna',email:'',type:'頭像',status:'等待中',paid:'部分付款',amount:800,start:'2025-07-08',end:'',note:''},
+]);
+let gallery = load('yk_gallery', []);
+let pricingList = load('yk_pricing', [
+  {id:'p1',name:'頭像',price:800,unit:'起',features:['半身構圖','簡單背景','2次修改'],featured:false},
+  {id:'p2',name:'全身插圖',price:2000,unit:'起',features:['全身構圖','細緻背景','3次修改'],featured:true},
+  {id:'p3',name:'多人場景',price:3500,unit:'起',features:['2人以上','複雜背景','無限修改'],featured:false},
+]);
+let rules = load('yk_rules','付款方式：接稿後先付 50%，完稿後付清尾款。\n交稿時間：依隊列順序，一般為 2–4 週。\n如需急件請事先告知，視情況加收加急費用。\n接受修改：草稿及線稿階段各一次大改，上色後僅接受小幅調整。');
+let contactInfo = load('yk_contact', {email:'',twitter:'',ig:'',other:'',notice:''});
+let siteSettings = load('yk_settings', {name:'Yuki Art', pwd:'yuki2024'});
+
+function persist() {
+  save('yk_commissions', commissions); save('yk_gallery', gallery);
+  save('yk_pricing', pricingList); save('yk_rules', rules);
+  save('yk_contact', contactInfo); save('yk_settings', siteSettings);
+}
+
+// ========== NAV ==========
+function goPage(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(el) el.classList.add('active');
+  if(id==='queue') renderQueue();
+  if(id==='gallery') renderGallery();
+  if(id==='pricing') renderPricing();
+  if(id==='contact') renderContact();
+  if(id==='admin') renderAdminAll();
+}
+
+// ========== SEARCH ==========
+const STEPS = ['草稿','線稿','上色','完稿'];
+function stepIdx(s) { return STEPS.indexOf(s); }
+
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const el = document.getElementById('searchResult');
+  if (!q) { el.innerHTML=''; return; }
+  const o = commissions.find(x=>x.name.toLowerCase()===q||x.id.toLowerCase()===q);
+  if (!o) {
+    el.innerHTML=`<div class="card" style="margin-top:1.5rem;text-align:center;color:var(--text-muted)"><div style="font-size:32px;margin-bottom:8px">🔍</div>找不到符合的委託<br><span style="font-size:13px">請確認姓名或訂單編號是否正確</span></div>`; return;
+  }
+  const si = stepIdx(o.status);
+  const stepsHtml = STEPS.map((s,i)=>{
+    const cls = i<si?'done':i===si?'active':'';
+    return `<div class="prog-step"><div class="prog-dot ${cls}">${i<si?'✓':i===si?'▶':''}</div><div class="prog-label ${cls}">${s}</div></div>`;
+  }).join('');
+  const paidColor = o.paid==='已付清'?'badge-green':o.paid==='部分付款'?'badge-amber':'badge-red';
+  const sColor = o.status==='等待中'?'badge-gray':o.status==='完稿'?'badge-green':'badge-purple';
+  const endText = o.end ? `<br>預計截止：<strong>${o.end}</strong>` : '';
+  el.innerHTML=`<div class="card" style="margin-top:1.5rem">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem">
+      <div><div style="font-size:17px;font-weight:600">${o.name}</div><div style="font-size:13px;color:var(--text-faint)">${o.id} · ${o.type}</div></div>
+      <span class="badge ${paidColor}">${o.paid}</span>
+    </div>
+    <span class="badge ${sColor}" style="margin-bottom:1rem">${o.status}</span>
+    ${si>=0?`<div class="progress-track" style="margin:1.25rem 0">${stepsHtml}</div>`:'<div style="font-size:14px;color:var(--text-muted);padding:8px 0">目前在等待隊列中，尚未開始作業。</div>'}
+    <div style="font-size:13px;color:var(--text-muted);padding-top:0.75rem;border-top:1px solid var(--border)">預計開始：<strong>${o.start||'待定'}</strong>${endText}
+    ${o.note?`<div class="note-block" style="margin-top:8px">📝 ${o.note}</div>`:''}
+    </div>
+  </div>`;
+}
+
+// ========== QUEUE ==========
+function renderQueue() {
+  const notice = document.getElementById('queueNotice');
+  if (contactInfo.notice) { notice.textContent = contactInfo.notice; notice.style.display='block'; } else notice.style.display='none';
+  const tb = document.getElementById('queueTbody');
+  if (!commissions.length) { tb.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem">目前沒有委託</td></tr>`; return; }
+  tb.innerHTML = commissions.map((o,i)=>`
+    <tr>
+      <td><div class="rank-num${i===0?' top':''}">${i+1}</div></td>
+      <td style="font-weight:500">${o.name}</td>
+      <td style="color:var(--text-muted)">${o.type}</td>
+      <td><span class="badge ${o.status==='完稿'?'badge-green':o.status==='等待中'?'badge-gray':'badge-purple'}">${o.status}</span></td>
+      <td><span class="badge ${o.paid==='已付清'?'badge-green':o.paid==='部分付款'?'badge-amber':'badge-red'}">${o.paid}</span></td>
+      <td style="color:var(--text-muted)">${o.start||'待定'}</td>
+    </tr>`).join('');
+}
+
+// ========== GALLERY ==========
+function renderGallery() {
+  const g = document.getElementById('galleryGrid');
+  g.innerHTML = `<div class="gallery-upload" onclick="document.getElementById('fileInput').click()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    上傳圖片</div>` +
+    gallery.map((img,i)=>`
+      <div class="gallery-item" onclick="openLightbox('${img.src}')">
+        <img src="${img.src}" alt="${img.name||''}">
+        <button class="gallery-del" onclick="event.stopPropagation();deleteGallery(${i})" title="刪除">✕</button>
+        ${img.name?`<div class="gallery-caption">${img.name}</div>`:''}
+      </div>`).join('');
+}
+
+function renderAdminGallery() {
+  const g = document.getElementById('adminGalleryGrid');
+  if(!g) return;
+  g.innerHTML = gallery.map((img,i)=>`
+    <div class="gallery-item">
+      <img src="${img.src}" alt="${img.name||''}">
+      <button class="gallery-del" style="display:flex" onclick="deleteGallery(${i});renderAdminGallery();renderGallery()" title="刪除">✕</button>
+      ${img.name?`<div class="gallery-caption">${img.name}</div>`:''}
+    </div>`).join('') ||
+    `<div style="color:var(--text-muted);font-size:14px;padding:1rem">還沒有作品，請上傳圖片。</div>`;
+}
+
+function handleUpload(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(f=>{
+    const reader = new FileReader();
+    reader.onload = ev => {
+      gallery.push({src: ev.target.result, name: f.name.replace(/\.[^.]+$/,'')});
+      persist(); renderGallery(); renderAdminGallery();
+      showToast('已上傳：' + f.name);
+    };
+    reader.readAsDataURL(f);
+  });
+  e.target.value='';
+}
+
+function deleteGallery(i) {
+  if (!confirm('確認刪除這張圖片？')) return;
+  gallery.splice(i,1); persist(); renderGallery(); renderAdminGallery();
+}
+
+function openLightbox(src) { document.getElementById('lightboxImg').src=src; document.getElementById('lightbox').classList.add('open'); }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+
+// ========== PRICING ==========
+function renderPricing() {
+  const g = document.getElementById('pricingGrid');
+  g.innerHTML = pricingList.map(p=>`
+    <div class="price-card${p.featured?' featured':''}">
+      ${p.featured?'<div class="price-featured-badge">推薦</div>':''}
+      <div class="price-type">${p.name}</div>
+      <div class="price-amount">NT$${p.price.toLocaleString()}</div>
+      <div class="price-unit">${p.unit}</div>
+      <ul class="price-features">${p.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+    </div>`).join('');
+  document.getElementById('rulesDisplay').textContent = rules;
+}
+
+function renderAdminPricing() {
+  const g = document.getElementById('adminPricingGrid');
+  if(!g) return;
+  g.innerHTML = pricingList.map(p=>`
+    <div class="price-card${p.featured?' featured':''}">
+      ${p.featured?'<div class="price-featured-badge">推薦</div>':''}
+      <div class="price-type">${p.name}</div>
+      <div class="price-amount">NT$${p.price.toLocaleString()}</div>
+      <div class="price-unit">${p.unit}</div>
+      <ul class="price-features">${p.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+      <button class="price-edit-btn" onclick="openEditPricing('${p.id}')">✏️</button>
+    </div>`).join('');
+  document.getElementById('rulesTA').value = rules;
+  document.getElementById('contactEmail').value = contactInfo.email||'';
+  document.getElementById('contactTwitter').value = contactInfo.twitter||'';
+  document.getElementById('contactIG').value = contactInfo.ig||'';
+  document.getElementById('contactOther').value = contactInfo.other||'';
+  document.getElementById('queueNoticeText').value = contactInfo.notice||'';
+}
+
+function openAddPricing() {
+  document.getElementById('pricingModalTitle').textContent='新增方案';
+  document.getElementById('pEditId').value='';
+  document.getElementById('pName').value='';
+  document.getElementById('pPrice').value='';
+  document.getElementById('pUnit').value='起';
+  document.getElementById('pFeatures').value='';
+  document.getElementById('pFeatured').checked=false;
+  document.getElementById('pDeleteBtn').style.display='none';
+  openModal('pricingModal');
+}
+
+function openEditPricing(id) {
+  const p = pricingList.find(x=>x.id===id); if(!p) return;
+  document.getElementById('pricingModalTitle').textContent='編輯方案';
+  document.getElementById('pEditId').value=id;
+  document.getElementById('pName').value=p.name;
+  document.getElementById('pPrice').value=p.price;
+  document.getElementById('pUnit').value=p.unit;
+  document.getElementById('pFeatures').value=p.features.join('\n');
+  document.getElementById('pFeatured').checked=p.featured;
+  document.getElementById('pDeleteBtn').style.display='inline-flex';
+  openModal('pricingModal');
+}
+
+function savePricing() {
+  const id = document.getElementById('pEditId').value;
+  const obj = {
+    id: id||('p'+Date.now()),
+    name: document.getElementById('pName').value.trim(),
+    price: parseInt(document.getElementById('pPrice').value)||0,
+    unit: document.getElementById('pUnit').value.trim()||'起',
+    features: document.getElementById('pFeatures').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    featured: document.getElementById('pFeatured').checked,
+  };
+  if(!obj.name) { alert('請輸入方案名稱'); return; }
+  if(id) { const i=pricingList.findIndex(x=>x.id===id); if(i>=0) pricingList[i]=obj; }
+  else pricingList.push(obj);
+  persist(); closeModal('pricingModal'); renderPricing(); renderAdminPricing(); showToast('已儲存方案');
+}
+
+function deletePricing() {
+  const id = document.getElementById('pEditId').value;
+  if(!confirm('確認刪除此方案？')) return;
+  pricingList = pricingList.filter(x=>x.id!==id);
+  persist(); closeModal('pricingModal'); renderPricing(); renderAdminPricing(); showToast('已刪除方案');
+}
+
+function editRules() { goPage('admin', document.querySelector('.nav-link:last-child')); adminLogin_check(); adminSwitchTabById('tPricing'); }
+function saveRules() { rules = document.getElementById('rulesTA').value; persist(); renderPricing(); showToast('已儲存規則'); }
+
+function saveContactInfo() {
+  contactInfo = {
+    email: document.getElementById('contactEmail').value.trim(),
+    twitter: document.getElementById('contactTwitter').value.trim(),
+    ig: document.getElementById('contactIG').value.trim(),
+    other: document.getElementById('contactOther').value.trim(),
+    notice: document.getElementById('queueNoticeText').value.trim(),
+  };
+  persist(); showToast('聯絡資訊已儲存'); renderContact();
+}
+
+// ========== CONTACT ==========
+function renderContact() {
+  const d = document.getElementById('contactDetail');
+  const rows = [];
+  if(contactInfo.email) rows.push(`<div class="contact-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>${contactInfo.email}</div>`);
+  if(contactInfo.twitter) rows.push(`<div class="contact-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 3a10.9 10.9 0 01-3.14 1.53A4.48 4.48 0 0012 8v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>${contactInfo.twitter}</div>`);
+  if(contactInfo.ig) rows.push(`<div class="contact-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>${contactInfo.ig}</div>`);
+  if(contactInfo.other) rows.push(`<div class="contact-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>${contactInfo.other}</div>`);
+  d.innerHTML = rows.join('') || '<span style="font-size:14px;color:var(--text-faint)">（尚未設定聯絡方式）</span>';
+  // populate type select
+  const sel = document.getElementById('cType');
+  sel.innerHTML='<option value="">— 請選擇 —</option>'+pricingList.map(p=>`<option>${p.name}</option>`).join('');
+}
+
+function submitContact() {
+  const name = document.getElementById('cName').value.trim();
+  const email = document.getElementById('cEmail').value.trim();
+  if(!name||!email) { alert('請填寫姓名與 Email'); return; }
+  document.getElementById('contactForm').style.display='none';
+  document.getElementById('contactSuccess').style.display='block';
+  showToast('訊息已送出！');
+}
+function resetContact() {
+  document.getElementById('cName').value=''; document.getElementById('cEmail').value='';
+  document.getElementById('cMessage').value='';
+  document.getElementById('contactForm').style.display='block';
+  document.getElementById('contactSuccess').style.display='none';
+}
+
+// ========== ADMIN ==========
+let adminLoggedIn = false;
+function adminLogin() {
+  const pwd = document.getElementById('adminPwd').value;
+  if(pwd===siteSettings.pwd) {
+    adminLoggedIn=true;
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminMain').style.display='block';
+    renderAdminAll();
+  } else { alert('密碼錯誤'); }
+}
+function adminLogin_check() {
+  if(adminLoggedIn) {
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminMain').style.display='block';
+  }
+}
+function adminLogout() {
+  adminLoggedIn=false;
+  document.getElementById('adminLogin').style.display='block';
+  document.getElementById('adminMain').style.display='none';
+  document.getElementById('adminPwd').value='';
+}
+function adminSwitchTab(id, el) {
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+  if(id==='tGallery') renderAdminGallery();
+  if(id==='tPricing') renderAdminPricing();
+  if(id==='tSite') { document.getElementById('siteName').value=siteSettings.name||''; }
+}
+function adminSwitchTabById(id) {
+  const tabs = {'tCommissions':0,'tGallery':1,'tPricing':2,'tSite':3};
+  const btns = document.querySelectorAll('.admin-tab');
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
+  btns.forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btns[tabs[id]]) btns[tabs[id]].classList.add('active');
+}
+function renderAdminAll() {
+  if(!adminLoggedIn) return;
+  renderAdminCommissions(); renderAdminGallery(); renderAdminPricing();
+  document.getElementById('siteName').value=siteSettings.name||'';
+}
+function saveSiteSettings() {
+  const name = document.getElementById('siteName').value.trim();
+  const newPwd = document.getElementById('newPwd').value;
+  if(name) { siteSettings.name=name; document.getElementById('siteNameDisplay').textContent=name; document.title=name+' — 委託追蹤'; }
+  if(newPwd) siteSettings.pwd=newPwd;
+  persist(); showToast('設定已儲存');
+  document.getElementById('newPwd').value='';
+}
+
+// ========== COMMISSIONS ==========
+function renderAdminCommissions() {
+  const tb = document.getElementById('adminCommTbody');
+  document.getElementById('commissionCount').textContent=`共 ${commissions.length} 筆委託`;
+  if(!commissions.length) { tb.innerHTML=`<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:2rem">尚無委託，請新增。</td></tr>`; return; }
+  const fType = document.getElementById('fType');
+  if(fType) fType.innerHTML=pricingList.map(p=>`<option>${p.name}</option>`).join('');
+  tb.innerHTML=commissions.map((o,i)=>`
+    <tr>
+      <td style="font-family:monospace;font-size:13px;color:var(--text-muted)">${o.id}</td>
+      <td style="font-weight:500">${o.name}${o.email?`<div style="font-size:12px;color:var(--text-faint)">${o.email}</div>`:''}</td>
+      <td style="color:var(--text-muted);font-size:13px">${o.type}</td>
+      <td>
+        <select class="status-select" onchange="quickUpdate(${i},'status',this.value)">
+          ${['等待中','草稿','線稿','上色','完稿'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select class="status-select" onchange="quickUpdate(${i},'paid',this.value)" style="min-width:90px">
+          ${['未付款','部分付款','已付清'].map(s=>`<option${o.paid===s?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td style="font-size:13px;color:var(--text-muted)">${o.start||'—'}</td>
+      <td style="font-size:13px;color:var(--text-muted)">${o.end||'—'}</td>
+      <td style="max-width:120px;font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${o.note||''}">${o.note||'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" onclick="openEditCommission(${i})">編輯</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCommission(${i})">刪除</button>
+      </td>
+    </tr>`).join('');
+}
+
+function quickUpdate(i, field, val) {
+  commissions[i][field]=val; persist(); renderQueue();
+}
+
+function openAddCommission() {
+  document.getElementById('commModalTitle').textContent='新增委託';
+  document.getElementById('commEditId').value='';
+  ['fId','fName','fEmail','fAmount','fStart','fEnd','fNote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fStatus').value='等待中';
+  document.getElementById('fPaid').value='未付款';
+  const t=document.getElementById('fType'); t.innerHTML=pricingList.map(p=>`<option>${p.name}</option>`).join('');
+  openModal('commModal');
+}
+
+function openEditCommission(i) {
+  const o=commissions[i];
+  document.getElementById('commModalTitle').textContent='編輯委託';
+  document.getElementById('commEditId').value=i;
+  document.getElementById('fId').value=o.id;
+  document.getElementById('fName').value=o.name;
+  document.getElementById('fEmail').value=o.email||'';
+  document.getElementById('fType').innerHTML=pricingList.map(p=>`<option${p.name===o.type?' selected':''}>${p.name}</option>`).join('');
+  document.getElementById('fStatus').value=o.status;
+  document.getElementById('fPaid').value=o.paid;
+  document.getElementById('fAmount').value=o.amount||'';
+  document.getElementById('fStart').value=o.start||'';
+  document.getElementById('fEnd').value=o.end||'';
+  document.getElementById('fNote').value=o.note||'';
+  openModal('commModal');
+}
+
+function saveCommission() {
+  const editIdx = document.getElementById('commEditId').value;
+  const obj = {
+    id: document.getElementById('fId').value.trim(),
+    name: document.getElementById('fName').value.trim(),
+    email: document.getElementById('fEmail').value.trim(),
+    type: document.getElementById('fType').value,
+    status: document.getElementById('fStatus').value,
+    paid: document.getElementById('fPaid').value,
+    amount: parseInt(document.getElementById('fAmount').value)||0,
+    start: document.getElementById('fStart').value,
+    end: document.getElementById('fEnd').value,
+    note: document.getElementById('fNote').value.trim(),
+  };
+  if(!obj.id||!obj.name) { alert('請填寫訂單編號和姓名'); return; }
+  if(editIdx!=='') { commissions[parseInt(editIdx)]=obj; }
+  else { commissions.push(obj); }
+  persist(); closeModal('commModal'); renderAdminCommissions(); renderQueue(); showToast('已儲存委託');
+}
+
+function deleteCommission(i) {
+  if(!confirm(`確認刪除 ${commissions[i].name} 的委託？`)) return;
+  commissions.splice(i,1); persist(); renderAdminCommissions(); renderQueue(); showToast('已刪除');
+}
+
+// ========== MODAL ==========
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+
+// ========== TOAST ==========
+let toastTimer;
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ========== INIT ==========
+document.getElementById('siteNameDisplay').textContent=siteSettings.name||'Yuki Art';
+document.title=(siteSettings.name||'Yuki Art')+' — 委託追蹤';
+renderQueue(); renderGallery(); renderPricing(); renderContact();
+</script>
+</body>
+</html>
